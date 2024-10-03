@@ -1,39 +1,56 @@
-import torch
-import clip
+from transformers import BlipProcessor, BlipForConditionalGeneration
 from PIL import Image
+from anytree import Node, RenderTree
+import os
+import spacy
 
-# Check if CUDA (GPU) is available; if not, use CPU
-device = "cuda" if torch.cuda.is_available() else "cpu"
+# Load BLIP model for dynamic image captioning
+processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
+model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
 
-# Load the CLIP model and the preprocessing method
-model, preprocess = clip.load("ViT-B/32", device=device)
+# load the SpaCy English language model for parsing dependencies
+nlp = spacy.load("en_core_web_sm")
 
-# Load and preprocess the image
-image_path = 'bird_1.jpg'  # Replace with your image path
-image = preprocess(Image.open(image_path)).unsqueeze(0).to(device)
+# Example image path
+image_path = "testImage.jpeg"
+image = Image.open(image_path)
 
-# Generate image features (embeddings)
-with torch.no_grad():
-    image_features = model.encode_image(image)
-    print("Image Embeddings Generated.")
+# Generate dynamic description for the image
+inputs = processor(images=image, return_tensors="pt")
+output = model.generate(**inputs, max_length = 50, min_length = 30, num_beams = 5)
+caption = processor.decode(output[0], skip_special_tokens=True)
 
-# Example text prompts
-text_inputs = clip.tokenize(["a bird sitting on a street", "a parrot with a red beak sitting on a branch", "a person dancing to music"]).to(device)
+doc = nlp(caption)
 
-# Generate text features
-with torch.no_grad():
-    image_features = model.encode_image(image)
-    text_features = model.encode_text(text_inputs)
+noun_adj_pairs = []
 
-# Normalize the features to have unit length
-image_features /= image_features.norm(dim=-1, keepdim=True)
-text_features /= text_features.norm(dim=-1, keepdim=True)
+for token in doc:
+    if token.pos_ == "NOUN":
+        adjectives = [child.text for child in token.children if child.pos_ == "ADJ"]
+        if adjectives:
+            for adj in adjectives:
+                noun_adj_pairs.append(f"{adj} {token.text}")
+        elif token.pos_ == "NOUN":
+            noun_adj_pairs.append(token.text)
 
-# Compute similarity between image and text features
-similarity = image_features @ text_features.T  # Matrix multiplication to get similarity
+print("Generated Caption: ", caption)
+print("Adjective-Noun pairs", noun_adj_pairs)
 
-# Apply softmax to scale similarity scores between 0 and 1
-similarity_scores = similarity.softmax(dim=-1)
+# Split the generated description into potential tags
+tags = caption.split()
 
-# Print the similarity scores for each text prompt
-print(similarity_scores)
+# Dynamically create a hierarchy based on general-to-specific logic
+root = Node("root")
+
+# Assuming the first tags are more generic, refine as needed
+for i, tag in enumerate(tags):
+    if i == 0:
+        # Generic tag at the top
+        child = Node(tag, parent=root)
+    else:
+        # More specific tags as we go down
+        Node(tag, parent=child)
+
+# Display the dynamically generated tree
+for pre, fill, node in RenderTree(root):
+    print(f"{pre}{node.name}")
