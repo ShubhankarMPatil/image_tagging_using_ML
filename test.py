@@ -3,21 +3,27 @@ from PIL import Image
 from anytree import Node, RenderTree
 import os
 import spacy
+import torch
+
+# use GPU for computation if CUDA is available else use CPU
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print(device)
 
 # Load BLIP model for dynamic image captioning
 processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
 model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
+model = model.to(device)
 
 # load the SpaCy English language model for parsing dependencies
 nlp = spacy.load("en_core_web_sm")
 
 # Example image path
-image_path = "testImage.jpeg"
+image_path = "Screenshot (39).png"
 image = Image.open(image_path)
 
 # Generate dynamic description for the image
-inputs = processor(images=image, return_tensors="pt")
-output = model.generate(**inputs, max_length = 50, min_length = 30, num_beams = 5)
+inputs = processor(images=image, return_tensors="pt").to(device)
+output = model.generate(**inputs, max_length = 50, min_length = 10, num_beams = 10)
 caption = processor.decode(output[0], skip_special_tokens=True)
 
 doc = nlp(caption)
@@ -34,23 +40,4 @@ for token in doc:
             noun_adj_pairs.append(token.text)
 
 print("Generated Caption: ", caption)
-print("Adjective-Noun pairs", noun_adj_pairs)
-
-# Split the generated description into potential tags
-tags = caption.split()
-
-# Dynamically create a hierarchy based on general-to-specific logic
-root = Node("root")
-
-# Assuming the first tags are more generic, refine as needed
-for i, tag in enumerate(tags):
-    if i == 0:
-        # Generic tag at the top
-        child = Node(tag, parent=root)
-    else:
-        # More specific tags as we go down
-        Node(tag, parent=child)
-
-# Display the dynamically generated tree
-for pre, fill, node in RenderTree(root):
-    print(f"{pre}{node.name}")
+print("Adjective-Noun pairs", list(set(noun_adj_pairs)))
