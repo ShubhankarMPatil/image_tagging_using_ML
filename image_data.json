@@ -5,48 +5,50 @@
         "few clouds"
     ],
     "bird_1.jpg": [
-        "top",
-        "banana",
-        "green bird"
+        "peel",
+        "bird",
+        "banana"
     ],
     "forest_4.jpg": [
-        "forest",
         "lots",
         "trees",
-        "path"
+        "forest",
+        "green grass"
     ],
     "Screenshot (188).png": [
-        "people",
-        "plane",
         "group",
-        "front"
+        "front",
+        "plane",
+        "people"
     ],
     "Screenshot (233).png": [
-        "screenshot",
-        "man",
         "baseball",
-        "bat"
+        "bat",
+        "man",
+        "hill"
     ],
     "Screenshot (269).png": [
-        "middle",
-        "man",
         "car",
-        "road"
+        "parking",
+        "lot",
+        "man"
     ],
     "Screenshot (38).png": [
+        "picture",
         "rainbow",
-        "minecraft",
-        "image"
+        "minecraft game"
     ],
     "Screenshot (40).png": [
         "water",
-        "large body",
+        "night",
+        "sky",
         "small boat"
     ],
     "Screenshot (50).png": [
-        "red car",
-        "bridge",
         "background",
+        "bridge",
+        "red car",
+        "sports",
         "road"
     ]
 }

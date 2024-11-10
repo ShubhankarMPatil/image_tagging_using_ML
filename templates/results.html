@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Processing Results</title>
+</head>
+<body>
+    <h1>Processed Images and Tags</h1>
+    <div>
+        {% for item in data %}
+            <div>
+                <img src="{{ url_for('static', filename='images/' + item['name']) }}" alt="Image" width="200">
+                <p>Tags: {{ item['tags'] }}</p>
+            </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

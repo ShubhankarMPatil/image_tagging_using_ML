@@ -27,8 +27,10 @@ def process_images_from_directory(directory_path):
             store_image_tags(filename, tags)
             print(f"Data saved for image '{filename}'\n")
 
+if __name__ == "__main__":
+
 # Specify the directory containing images
-directory_path = "test_images"  # Replace with your directory path
+    directory_path = "test_images"  # Replace with your directory path
 
 # Process all images in the specified directory
-process_images_from_directory(directory_path)
+    process_images_from_directory(directory_path)
